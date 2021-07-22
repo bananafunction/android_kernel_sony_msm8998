@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2019 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2020 The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -744,13 +744,20 @@ rrm_fill_beacon_ies(tpAniSirGlobal pMac,
 		pIes += sizeof(uint16_t);
 	}
 
-	while (BcnNumIes > 0) {
-		len = *(pBcnIes + 1) + 2;       /* element id + length. */
+	while (BcnNumIes >= 2) {
+		len = *(pBcnIes + 1);
+		len += 2;       /* element id + length. */
 		pe_debug("EID = %d, len = %d total = %d",
 			*pBcnIes, *(pBcnIes + 1), len);
 
-		if (!len) {
-			pe_err("Invalid length");
+		if (BcnNumIes < len) {
+			pe_err("RRM: Invalid IE len:%d exp_len:%d",
+			       len, BcnNumIes);
+			break;
+		}
+
+		if (len <= 2) {
+			pe_err("RRM: Invalid IE");
 			break;
 		}
 
